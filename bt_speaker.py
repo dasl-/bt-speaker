@@ -109,8 +109,9 @@ class AutoAcceptSingleAudioAgent(BTAgent):
             return
 
         if bool(self.connected):
-            print("Hiding adapter from all devices.")
-            self.adapter.set_property('Discoverable', False)
+            pass # Keep it discoverable
+            # print("Hiding adapter from all devices.")
+            # self.adapter.set_property('Discoverable', False)
         else:
             print("Showing adapter to all devices.")
             self.adapter.set_property('Discoverable', True)
