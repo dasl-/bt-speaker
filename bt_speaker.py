@@ -73,7 +73,7 @@ class PipedSBCAudioSinkWithAlsaVolumeControl(SBCAudioSink):
         # normalize volume
         volume = float(new_volume) / 127.0
 
-        print("Volume changed to %i%%" % (volume * 100.0))
+        print("Volume changed to %i%%" % (volume * 100.0), flush = True)
 
         self.__volume_controller.set_vol_pct(volume * 100)
 
@@ -113,14 +113,25 @@ class AutoAcceptSingleAudioAgent(BTAgent):
             # print("Hiding adapter from all devices.")
             # self.adapter.set_property('Discoverable', False)
         else:
-            print("Showing adapter to all devices.")
+            print("Showing adapter to all devices.", flush = True)
             self.adapter.set_property('Discoverable', True)
 
     def auto_accept_one(self, method, device, uuid):
         if not BTUUID(uuid).uuid in self.allowed_uuids: return False
         if self.connected and self.connected != device:
-            print("Rejecting device, because another one is already connected. connected_device=%s, device=%s" % (self.connected, device))
-            return False
+            # print("Rejecting device, because another one is already connected. connected_device=%s, device=%s" % (self.connected, device))
+            # return False
+            print(f"Device disconnected because a new one is connecting: old device ={self.connected} , new device: {device}, new uuid: {uuid}", flush = True)
+            old_device_addr = self.connected.split('/dev_')[1].replace('_', ':')
+            cmd = f'bluetoothctl disconnect {old_device_addr}'
+            output = (subprocess
+                .check_output(cmd, shell = True, executable = '/bin/bash')
+                .decode("utf-8"))
+            print(f"Ran {cmd}. Output: {output}")
+
+            self.connected = None
+            self.update_discoverable()
+            self.disconnect_callback()
 
         # track connection state of the device (is there a better way?)
         if not device in self.tracked_devices:
@@ -147,13 +158,13 @@ class AutoAcceptSingleAudioAgent(BTAgent):
         if not 'Connected' in properties: return
 
         if not self.connected and bool(properties['Connected']):
-            print("Device connected. device=%s" % device)
+            print("Device connected. device=%s" % device, flush = True)
             self.connected = device
             self.update_discoverable()
             self.connect_callback()
 
         elif self.connected and not bool(properties['Connected']):
-            print("Device disconnected. device=%s" % device)
+            print("Device disconnected. device=%s" % device, flush = True)
             self.connected = None
             self.update_discoverable()
             self.disconnect_callback()
@@ -374,6 +385,6 @@ if __name__ == '__main__':
     try:
         run()
     except KeyboardInterrupt:
-        print('KeyboardInterrupt')
+        print('KeyboardInterrupt', flush = True)
     except Exception as e:
-        print(e.message)
+        print(e.message, flush = True)
