@@ -13,7 +13,6 @@ import dbus
 import dbus.mainloop.glib
 import signal
 import subprocess
-import alsaaudio
 import math
 import configparser
 import io
@@ -95,7 +94,8 @@ class AutoAcceptSingleAudioAgent(BTAgent):
     def __init__(self, connect_callback, disconnect_callback, track_callback):
         BTAgent.__init__(self, default_pin_code=config.get('bluez', 'pin_code') or '0000', cb_notify_on_authorize=self.auto_accept_one)
         self.adapter = BTAdapter(config.get('bluez', 'device_path'))
-        self.adapter.set_property('Discoverable', config.getboolean('bluez', 'discoverable'))
+        # self.adapter.set_property('Discoverable', config.getboolean('bluez', 'discoverable'))
+        self.adapter.set_property('Discoverable', False)
         self.allowed_uuids = [ SERVICES["AdvancedAudioDistribution"].uuid, SERVICES["AVRemoteControl"].uuid ]
         self.connected = None
         self.tracked_devices =  []
@@ -105,6 +105,7 @@ class AutoAcceptSingleAudioAgent(BTAgent):
         self.update_discoverable()
 
     def update_discoverable(self):
+        return
         if not config.getboolean('bluez', 'discoverable'):
             return
 
