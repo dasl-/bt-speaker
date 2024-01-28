@@ -1,7 +1,7 @@
 from collections import namedtuple
 from bt_manager import ffi
 import os
-import platform
+import sys
 
 A2DP_CODECS = {'SBC': 0x00,
                'MPEG12': 0x01,
@@ -93,11 +93,9 @@ class SBCCodec:
     """
 
     def __init__(self, config):
-
-        import sys
-
         so_path = './librtpsbc.so'
-        if platform.machine() == 'aarch64':
+        is_64bits = sys.maxsize > 2**32 # https://docs.python.org/3/library/platform.html#platform.architecture
+        if is_64bits:
             so_path = './librtpsbc_aarch64.so'
 
         try:
